@@ -1,2 +1,1 @@
-# preparedStatementTutorial
-Kotlin reflection and prepared statement tutorial
+## Kotlin reflection and prepared statement tutorial

@@ -2,6 +2,7 @@ package com.j0rsa.tutorial.preparedStatement
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
+import com.j0rsa.tutorial.preparedStatement.ResultColumn.IntColumn
 import com.j0rsa.tutorial.preparedStatement.TransactionManager.currentTransaction
 import com.j0rsa.tutorial.preparedStatement.TransactionManager.tx
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -23,7 +24,33 @@ internal class QueriesKtTest {
         }
     }
 
+    @Test
+    fun testExecQuery() {
+        tempTx {
+            insertUser("user1")
+            insertUser("user2")
+            val resultSet: List<UserData> =
+                """
+                SELECT 
+                    id, 
+                    name, 
+                    row_number() over(order by id) rn
+                FROM Users
+                """.trimIndent()
+                    .exec()
+                    .map {
+                        UserData(
+                            user = it.toEntity(),
+                            rowNumber = IntColumn("rn") from it
+                        )
+                    }
+            assertThat(resultSet.map { it.user.name }).containsOnly("user1", "user2")
+            assertThat(resultSet.map { it.rowNumber }).containsOnly(1, 2)
+        }
+    }
+
     data class User(val id: Int, val name: String)
+    data class UserData(val user: User, val rowNumber: Int)
 
     private fun insertUser(name: String = "testUserName") = Users.insert {
         it[this.name] = name

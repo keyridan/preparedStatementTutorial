@@ -13,11 +13,11 @@ fun ResultSet?.getValue(name: String): ArrayList<String> = this.map { it.toValue
 
 fun ResultSet.toValue(name: String): String = this.getString(name)
 
-fun <T> ResultSet?.map(transformer: (ResultSet) -> T): ArrayList<T> {
+fun <T> ResultSet?.map(transform: (ResultSet) -> T): ArrayList<T> {
     val result = arrayListOf<T>()
     this?.use {
         while (it.next()) {
-            result += transformer(this)
+            result += transform(this)
         }
     }
     return result

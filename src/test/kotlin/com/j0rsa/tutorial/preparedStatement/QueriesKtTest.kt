@@ -15,14 +15,15 @@ internal class QueriesKtTest {
         tempTx {
             insertUser("user1")
             insertUser("user2")
-            val resultSet: List<String> =
+            val resultSet: List<User> =
                 """SELECT * FROM Users""".trimIndent()
                     .exec()
-                    .getValue("name")
-
-            assertThat(resultSet).containsOnly("user1", "user2")
+                    .toEntities()
+            assertThat(resultSet.map { it.name }).containsOnly("user1", "user2")
         }
     }
+
+    data class User(val id: Int, val name: String)
 
     private fun insertUser(name: String = "testUserName") = Users.insert {
         it[this.name] = name

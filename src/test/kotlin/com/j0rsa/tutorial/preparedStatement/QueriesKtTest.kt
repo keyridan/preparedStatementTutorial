@@ -2,7 +2,9 @@ package com.j0rsa.tutorial.preparedStatement
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
+import com.j0rsa.tutorial.preparedStatement.Param.IntParam
 import com.j0rsa.tutorial.preparedStatement.ResultColumn.IntColumn
+import com.j0rsa.tutorial.preparedStatement.ResultColumn.StringColumn
 import com.j0rsa.tutorial.preparedStatement.TransactionManager.currentTransaction
 import com.j0rsa.tutorial.preparedStatement.TransactionManager.tx
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -22,6 +24,27 @@ internal class QueriesKtTest {
                     .exec()
                     .toEntities()
             assertThat(resultSet.map { it.name }).containsOnly("user1", "user2")
+        }
+    }
+
+    @Test
+    fun testExecQueryWithParam() {
+        tempTx {
+            insertUser("user@")
+            insertUser("longName")
+            insertUser("longUserName@here")
+            insertUser("longUserName")
+            val resultSet: List<String> =
+                """
+                SELECT *
+                FROM Users 
+                WHERE length(name)>? and name regexp ?""".trimIndent()
+                    .exec(
+                        IntParam(("longName").length),
+                        Param.StringParam("@")
+                    )
+                    .get(StringColumn("name"))
+            assertThat(resultSet).containsOnly("longUserName@here")
         }
     }
 

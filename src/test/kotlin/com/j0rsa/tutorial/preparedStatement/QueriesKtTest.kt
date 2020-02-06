@@ -8,6 +8,7 @@ import com.j0rsa.tutorial.preparedStatement.TransactionManager.tx
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.junit.jupiter.api.Test
+import java.sql.ResultSet
 
 internal class QueriesKtTest {
 
@@ -38,10 +39,10 @@ internal class QueriesKtTest {
                 FROM Users
                 """.trimIndent()
                     .exec()
-                    .map {
+                    .map { result: ResultSet ->
                         UserData(
-                            user = it.toEntity(),
-                            rowNumber = IntColumn("rn") from it
+                            user = result.toEntity(),
+                            rowNumber = IntColumn("rn") from result
                         )
                     }
             assertThat(resultSet.map { it.user.name }).containsOnly("user1", "user2")
